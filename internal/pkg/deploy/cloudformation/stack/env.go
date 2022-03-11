@@ -97,6 +97,8 @@ func (e *EnvStackConfig) Template() (string, error) {
 		VPCConfig:      e.vpcConfig(),
 		Telemetry:      e.telemetryConfig(),
 
+		IsPrivate:              e.in.IsPrivate,
+
 		Version:       e.in.Version,
 		LatestVersion: deploy.LatestEnvTemplateVersion,
 	}, template.WithFuncs(map[string]interface{}{
