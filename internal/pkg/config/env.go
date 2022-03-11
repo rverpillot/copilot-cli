@@ -25,6 +25,7 @@ type Environment struct {
 	ManagerRoleARN   string        `json:"managerRoleARN"`         // ARN for the manager role assumed to manipulate the environment and its services.
 	CustomConfig     *CustomizeEnv `json:"customConfig,omitempty"` // Custom environment configuration by users.
 	Telemetry        *Telemetry    `json:"telemetry,omitempty"`    // Optional environment telemetry features.
+	IsPrivate        bool          `json:"private,omitempty"`
 }
 
 // HasImportedCerts return if the environment has imported certs.

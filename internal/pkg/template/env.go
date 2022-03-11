@@ -46,6 +46,8 @@ type EnvOpts struct {
 	ImportCertARNs []string
 	Telemetry      *config.Telemetry
 
+	IsPrivate bool
+
 	LatestVersion string
 }
 

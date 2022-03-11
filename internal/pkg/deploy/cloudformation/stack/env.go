@@ -106,6 +106,7 @@ func (e *EnvStackConfig) Template() (string, error) {
 		Version:                e.in.Version,
 		Telemetry:              e.in.Telemetry,
 		LatestVersion:          deploy.LatestEnvTemplateVersion,
+		IsPrivate:              e.in.IsPrivate,
 	}, template.WithFuncs(map[string]interface{}{
 		"inc": template.IncFunc,
 	}))

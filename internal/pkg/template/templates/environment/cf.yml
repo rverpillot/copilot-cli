@@ -140,7 +140,7 @@ Resources:
     Condition: CreateALB
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
-      Scheme: internet-facing
+      Scheme: {{if .IsPrivate}}internal{{else}}internet-facing{{end}}
       SecurityGroups: [ !GetAtt PublicLoadBalancerSecurityGroup.GroupId ]
 {{- if .ImportVPC}}
       Subnets: [ {{range $id := .ImportVPC.PublicSubnetIDs}}{{$id}}, {{end}} ]
