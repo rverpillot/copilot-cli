@@ -34,6 +34,8 @@ type CreateEnvironmentInput struct {
 	Telemetry            *config.Telemetry // Optional observability and monitoring configuration.
 
 	CFNServiceRoleARN string // Optional. A service role ARN that CloudFormation should use to make calls to resources in the stack.
+
+	IsPrivate bool
 }
 
 // CreateEnvironmentResponse holds the created environment on successful deployment.

@@ -147,6 +147,8 @@ type initEnvVars struct {
 
 	tempCreds tempCredsVars // Temporary credentials to initialize the environment. Mutually exclusive with the profile.
 	region    string        // The region to create the environment in.
+
+	isPrivate bool // True means environment is not internet facing
 }
 
 type initEnvOpts struct {
@@ -328,6 +330,7 @@ func (o *initEnvOpts) Execute() error {
 		env.CustomConfig = &customizedEnv
 	}
 	env.Telemetry = o.telemetry.toConfig()
+	env.IsPrivate = o.isPrivate
 
 	// 6. Store the environment in SSM.
 	if err := o.store.CreateEnvironment(env); err != nil {
@@ -707,6 +710,7 @@ func (o *initEnvOpts) deployEnv(app *config.Application,
 		ImportVPCConfig:      o.importVPCConfig(),
 		Telemetry:            o.telemetry.toConfig(),
 		Version:              deploy.LatestEnvTemplateVersion,
+		IsPrivate:            o.isPrivate,
 	}
 
 	if err := o.cleanUpDanglingRoles(o.appName, o.name); err != nil {
@@ -845,6 +849,8 @@ func buildEnvInitCmd() *cobra.Command {
 
 	cmd.Flags().BoolVar(&vars.isProduction, prodEnvFlag, false, prodEnvFlagDescription) // Deprecated. Use telemetry flags instead.
 	cmd.Flags().BoolVar(&vars.telemetry.EnableContainerInsights, enableContainerInsightsFlag, false, enableContainerInsightsFlagDescription)
+
+	cmd.Flags().BoolVar(&vars.isPrivate, "private", false, "if the environment is not internet facing")
 
 	cmd.Flags().StringVar(&vars.importVPC.ID, vpcIDFlag, "", vpcIDFlagDescription)
 	cmd.Flags().StringSliceVar(&vars.importVPC.PublicSubnetIDs, publicSubnetsFlag, nil, publicSubnetsFlagDescription)
