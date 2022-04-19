@@ -99,7 +99,7 @@ func NewLoadBalancedWebService(conf LoadBalancedWebServiceConfig,
 	}
 	if conf.Env.HasImportedCerts() {
 		httpsEnabled = true
-		dnsDelegationEnabled = false
+		// dnsDelegationEnabled = false
 	}
 	if conf.Manifest.RoutingRule.Disabled() {
 		httpsEnabled = false

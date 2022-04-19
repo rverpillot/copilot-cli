@@ -149,7 +149,8 @@ type initEnvVars struct {
 	tempCreds tempCredsVars // Temporary credentials to initialize the environment. Mutually exclusive with the profile.
 	region    string        // The region to create the environment in.
 
-	isPrivate bool // True means environment is not internet facing
+	isPrivate      bool // True means environment is not internet facing
+	importCertARNs []string
 }
 
 type initEnvOpts struct {
@@ -854,7 +855,8 @@ func buildEnvInitCmd() *cobra.Command {
 	cmd.Flags().BoolVar(&vars.isProduction, prodEnvFlag, false, prodEnvFlagDescription) // Deprecated. Use telemetry flags instead.
 	cmd.Flags().BoolVar(&vars.telemetry.EnableContainerInsights, enableContainerInsightsFlag, false, enableContainerInsightsFlagDescription)
 
-	cmd.Flags().BoolVar(&vars.isPrivate, "private", false, "if the environment is not internet facing")
+	cmd.Flags().BoolVar(&vars.isPrivate, "private", false, "if the environment is not internet facing.")
+	cmd.Flags().StringSliceVar(&vars.importCertARNs, "import-certificates", nil, "Optional. Use existing certificate ARNs.")
 
 	cmd.Flags().StringVar(&vars.importVPC.ID, vpcIDFlag, "", vpcIDFlagDescription)
 	cmd.Flags().StringSliceVar(&vars.importVPC.PublicSubnetIDs, publicSubnetsFlag, nil, publicSubnetsFlagDescription)
@@ -876,6 +878,7 @@ func buildEnvInitCmd() *cobra.Command {
 	flags.AddFlag(cmd.Flags().Lookup(sessionTokenFlag))
 	flags.AddFlag(cmd.Flags().Lookup(regionFlag))
 	flags.AddFlag(cmd.Flags().Lookup(defaultConfigFlag))
+	flags.AddFlag(cmd.Flags().Lookup("private"))
 
 	resourcesImportFlags := pflag.NewFlagSet("Import Existing Resources", pflag.ContinueOnError)
 	resourcesImportFlags.AddFlag(cmd.Flags().Lookup(vpcIDFlag))
