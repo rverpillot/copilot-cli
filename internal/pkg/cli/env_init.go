@@ -148,7 +148,8 @@ type initEnvVars struct {
 	tempCreds tempCredsVars // Temporary credentials to initialize the environment. Mutually exclusive with the profile.
 	region    string        // The region to create the environment in.
 
-	isPrivate bool // True means environment is not internet facing
+	isPrivate      bool // True means environment is not internet facing
+	importCertARNs []string
 }
 
 type initEnvOpts struct {
@@ -323,8 +324,9 @@ func (o *initEnvOpts) Execute() error {
 	}
 	env.Prod = o.isProduction
 	customizedEnv := config.CustomizeEnv{
-		ImportVPC: o.importVPCConfig(),
-		VPCConfig: o.adjustVPCConfig(),
+		ImportVPC:      o.importVPCConfig(),
+		VPCConfig:      o.adjustVPCConfig(),
+		ImportCertARNs: o.importCertARNs,
 	}
 	if !customizedEnv.IsEmpty() {
 		env.CustomConfig = &customizedEnv
@@ -711,6 +713,7 @@ func (o *initEnvOpts) deployEnv(app *config.Application,
 		Telemetry:            o.telemetry.toConfig(),
 		Version:              deploy.LatestEnvTemplateVersion,
 		IsPrivate:            o.isPrivate,
+		ImportCertARNs:       o.importCertARNs,
 	}
 
 	if err := o.cleanUpDanglingRoles(o.appName, o.name); err != nil {
@@ -850,7 +853,8 @@ func buildEnvInitCmd() *cobra.Command {
 	cmd.Flags().BoolVar(&vars.isProduction, prodEnvFlag, false, prodEnvFlagDescription) // Deprecated. Use telemetry flags instead.
 	cmd.Flags().BoolVar(&vars.telemetry.EnableContainerInsights, enableContainerInsightsFlag, false, enableContainerInsightsFlagDescription)
 
-	cmd.Flags().BoolVar(&vars.isPrivate, "private", false, "if the environment is not internet facing")
+	cmd.Flags().BoolVar(&vars.isPrivate, "private", false, "if the environment is not internet facing.")
+	cmd.Flags().StringSliceVar(&vars.importCertARNs, "import-certificates", nil, "Optional. Use existing certificate ARNs.")
 
 	cmd.Flags().StringVar(&vars.importVPC.ID, vpcIDFlag, "", vpcIDFlagDescription)
 	cmd.Flags().StringSliceVar(&vars.importVPC.PublicSubnetIDs, publicSubnetsFlag, nil, publicSubnetsFlagDescription)
@@ -872,11 +876,13 @@ func buildEnvInitCmd() *cobra.Command {
 	flags.AddFlag(cmd.Flags().Lookup(sessionTokenFlag))
 	flags.AddFlag(cmd.Flags().Lookup(regionFlag))
 	flags.AddFlag(cmd.Flags().Lookup(defaultConfigFlag))
+	flags.AddFlag(cmd.Flags().Lookup("private"))
 
 	resourcesImportFlags := pflag.NewFlagSet("Import Existing Resources", pflag.ContinueOnError)
 	resourcesImportFlags.AddFlag(cmd.Flags().Lookup(vpcIDFlag))
 	resourcesImportFlags.AddFlag(cmd.Flags().Lookup(publicSubnetsFlag))
 	resourcesImportFlags.AddFlag(cmd.Flags().Lookup(privateSubnetsFlag))
+	resourcesImportFlags.AddFlag(cmd.Flags().Lookup("import-certificates"))
 
 	resourcesConfigFlags := pflag.NewFlagSet("Configure Default Resources", pflag.ContinueOnError)
 	resourcesConfigFlags.AddFlag(cmd.Flags().Lookup(overrideVPCCIDRFlag))
