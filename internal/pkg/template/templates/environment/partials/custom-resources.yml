@@ -12,7 +12,7 @@ DelegateDNSAction:
     SubdomainName: !Sub ${EnvironmentName}.${AppName}.${AppDNSName}
     NameServers: !GetAtt EnvironmentHostedZone.NameServers
     RootDNSRole: !Ref AppDNSDelegationRole
-
+{{- if not .IsPrivate}}
 HTTPSCert:
   Metadata:
     'aws:copilot:description': 'Request and validate an ACM certificate for your domain'
@@ -31,7 +31,7 @@ HTTPSCert:
     EnvHostedZoneId: !Ref EnvironmentHostedZone
     Region: !Ref AWS::Region
     RootDNSRole: !Ref AppDNSDelegationRole
-
+{{- end}}
 CustomDomainAction:
   Metadata:
     'aws:copilot:description': 'Add an A-record to the hosted zone for the domain alias'
