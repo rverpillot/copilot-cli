@@ -4,71 +4,75 @@
 // Package graph provides functionality for directed graphs.
 package graph
 
-// nodeStatus denotes the visiting status of a node when running DFS in a graph.
-type nodeStatus int
+// vertexStatus denotes the visiting status of a vertex when running DFS in a graph.
+type vertexStatus int
 
 const (
-	unvisited nodeStatus = iota + 1
+	unvisited vertexStatus = iota + 1
 	visiting
 	visited
 )
 
 // Graph represents a directed graph.
-type Graph struct {
-	nodes map[string]neighbors
+type Graph[V comparable] struct {
+	vertices map[V]neighbors[V]
 }
 
 // Edge represents one edge of a directed graph.
-type Edge struct {
-	From string
-	To   string
+type Edge[V comparable] struct {
+	From V
+	To   V
 }
 
-type neighbors map[string]bool
+type neighbors[V comparable] map[V]bool
 
 // New initiates a new Graph.
-func New() *Graph {
-	return &Graph{
-		nodes: make(map[string]neighbors),
+func New[V comparable](vertices ...V) *Graph[V] {
+	m := make(map[V]neighbors[V])
+	for _, vertex := range vertices {
+		m[vertex] = make(neighbors[V])
+	}
+	return &Graph[V]{
+		vertices: m,
 	}
 }
 
-// Add adds a connection between two Nodes.
-func (g *Graph) Add(edge Edge) {
-	fromNode, toNode := edge.From, edge.To
-	// Add origin node if doesn't exist.
-	if _, ok := g.nodes[fromNode]; !ok {
-		g.nodes[fromNode] = make(neighbors)
+// Add adds a connection between two vertices.
+func (g *Graph[V]) Add(edge Edge[V]) {
+	from, to := edge.From, edge.To
+	// Add origin vertex if doesn't exist.
+	if _, ok := g.vertices[from]; !ok {
+		g.vertices[from] = make(neighbors[V])
 	}
 	// Add edge.
-	g.nodes[fromNode][toNode] = true
+	g.vertices[from][to] = true
 }
 
-type findCycleTempVars struct {
-	status     map[string]nodeStatus
-	nodeParent map[string]string
-	cycleStart string
-	cycleEnd   string
+type findCycleTempVars[V comparable] struct {
+	status     map[V]vertexStatus
+	parents    map[V]V
+	cycleStart V
+	cycleEnd   V
 }
 
 // IsAcyclic checks if the graph is acyclic. If not, return the first detected cycle.
-func (g *Graph) IsAcyclic() ([]string, bool) {
-	var cycle []string
-	status := make(map[string]nodeStatus)
-	for node := range g.nodes {
-		status[node] = unvisited
+func (g *Graph[V]) IsAcyclic() ([]V, bool) {
+	var cycle []V
+	status := make(map[V]vertexStatus)
+	for vertex := range g.vertices {
+		status[vertex] = unvisited
 	}
-	temp := findCycleTempVars{
-		status:     status,
-		nodeParent: make(map[string]string),
+	temp := findCycleTempVars[V]{
+		status:  status,
+		parents: make(map[V]V),
 	}
 	// We will run a series of DFS in the graph. Initially all vertices are marked unvisited.
-	// From each unvisited node, start the DFS, mark it visiting while entering and mark it visited on exit.
-	// If DFS moves to a visiting node, then we have found a cycle. The cycle itself can be reconstructed using parent map.
+	// From each unvisited vertex, start the DFS, mark it visiting while entering and mark it visited on exit.
+	// If DFS moves to a visiting vertex, then we have found a cycle. The cycle itself can be reconstructed using parent map.
 	// See https://cp-algorithms.com/graph/finding-cycle.html
-	for node := range g.nodes {
-		if status[node] == unvisited && g.hasCycles(&temp, node) {
-			for n := temp.cycleStart; n != temp.cycleEnd; n = temp.nodeParent[n] {
+	for vertex := range g.vertices {
+		if status[vertex] == unvisited && g.hasCycles(&temp, vertex) {
+			for n := temp.cycleStart; n != temp.cycleEnd; n = temp.parents[n] {
 				cycle = append(cycle, n)
 			}
 			cycle = append(cycle, temp.cycleEnd)
@@ -78,20 +82,39 @@ func (g *Graph) IsAcyclic() ([]string, bool) {
 	return nil, true
 }
 
-func (g *Graph) hasCycles(temp *findCycleTempVars, currNode string) bool {
-	temp.status[currNode] = visiting
-	for node := range g.nodes[currNode] {
-		if temp.status[node] == unvisited {
-			temp.nodeParent[node] = currNode
-			if g.hasCycles(temp, node) {
+func (g *Graph[V]) hasCycles(temp *findCycleTempVars[V], currVertex V) bool {
+	temp.status[currVertex] = visiting
+	for vertex := range g.vertices[currVertex] {
+		if temp.status[vertex] == unvisited {
+			temp.parents[vertex] = currVertex
+			if g.hasCycles(temp, vertex) {
 				return true
 			}
-		} else if temp.status[node] == visiting {
-			temp.cycleStart = currNode
-			temp.cycleEnd = node
+		} else if temp.status[vertex] == visiting {
+			temp.cycleStart = currVertex
+			temp.cycleEnd = vertex
 			return true
 		}
 	}
-	temp.status[currNode] = visited
+	temp.status[currVertex] = visited
 	return false
+}
+
+// TopologicalSorter ranks vertices in a graph using topological sort.
+type TopologicalSorter[V comparable] struct {
+	ranks map[V]int
+}
+
+// Rank returns the order of the vertex. The smallest order starts at 0.
+// If the vertex does not exist in the graph, then returns an error.
+func (s *TopologicalSorter[V]) Rank(vtx V) (int, error) {
+	// TODO(efekarakus): Implement me.
+	return 0, nil
+}
+
+// TopologicalSort determines whether the directed graph is acyclic, and if so then finds a topological order.
+// If the digraph contains a cycle, then an error is returned.
+func TopologicalSort[V comparable](digraph *Graph[V]) (*TopologicalSorter[V], error) {
+	// TODO(efekarakus): Implement me.
+	return nil, nil
 }
