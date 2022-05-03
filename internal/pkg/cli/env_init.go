@@ -714,7 +714,6 @@ func (o *initEnvOpts) deployEnv(app *config.Application,
 		Telemetry:            o.telemetry.toConfig(),
 		Version:              deploy.LatestEnvTemplateVersion,
 		IsPrivate:            o.isPrivate,
-		ImportCertARNs:       o.importCertARNs,
 	}
 
 	if err := o.cleanUpDanglingRoles(o.appName, o.name); err != nil {
@@ -856,7 +855,6 @@ func buildEnvInitCmd() *cobra.Command {
 	cmd.Flags().BoolVar(&vars.telemetry.EnableContainerInsights, enableContainerInsightsFlag, false, enableContainerInsightsFlagDescription)
 
 	cmd.Flags().BoolVar(&vars.isPrivate, "private", false, "if the environment is not internet facing.")
-	cmd.Flags().StringSliceVar(&vars.importCertARNs, "import-certificates", nil, "Optional. Use existing certificate ARNs.")
 
 	cmd.Flags().StringVar(&vars.importVPC.ID, vpcIDFlag, "", vpcIDFlagDescription)
 	cmd.Flags().StringSliceVar(&vars.importVPC.PublicSubnetIDs, publicSubnetsFlag, nil, publicSubnetsFlagDescription)
