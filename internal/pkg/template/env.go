@@ -45,10 +45,6 @@ type EnvOpts struct {
 
 	IsPrivate bool
 
-	IsPrivate bool
-
-	IsPrivate bool
-
 	LatestVersion string
 }
 

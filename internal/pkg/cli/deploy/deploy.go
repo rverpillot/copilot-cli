@@ -1199,12 +1199,12 @@ func validateAppVersionForAlias(appName string, appVersionGetter versionGetter) 
 
 func (d *lbSvcDeployer) validateALBWSRuntime() error {
 	if d.lbMft.RoutingRule.Alias.IsEmpty() {
-		// if d.env.HasImportedCerts() {
-		// 	return &errSvcWithNoALBAliasDeployingToEnvWithImportedCerts{
-		// 		name:    d.name,
-		// 		envName: d.env.Name,
-		// 	}
-		// }
+		if d.env.HasImportedCerts() {
+			return &errSvcWithNoALBAliasDeployingToEnvWithImportedCerts{
+				name:    d.name,
+				envName: d.env.Name,
+			}
+		}
 		return nil
 	}
 	if d.env.HasImportedCerts() {
